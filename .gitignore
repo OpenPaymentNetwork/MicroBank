@@ -1,0 +1,12 @@
+.project
+.pydevproject
+.installed.cfg
+*.pyc
+*.egg-info
+bin
+lib
+eggs
+develop-eggs
+include
+microbank.db
+parts
