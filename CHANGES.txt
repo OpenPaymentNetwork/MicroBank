@@ -1,0 +1,5 @@
+0.1
+---
+
+- Initial version. This version simply uses OAuth 2 to store and publish
+  info about people who authorize the application.

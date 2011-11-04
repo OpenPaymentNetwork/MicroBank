@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
+<head>
+  <title>MicroBank User ${user.display_name}</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <link rel="shortcut icon" href="${request.static_url('microbank:static/favicon.ico')}" />
+  <link rel="stylesheet" href="${request.static_url('microbank:static/pylons.css')}" type="text/css" media="screen" charset="utf-8" />
+</head>
+<body>
+<div id="wrap">
+    <div id="bottom">
+        <div class="bottom">
+            <img src="${user.photo50}" style="float: left; margin: 0 10px 4px 0;" />
+            <h1>MicroBank User ${user.display_name}</h1>
+            <div style="clear: left;"></div>
+            <b>Id:</b> ${user.wingcash_id}<br />
+            <b>Name:</b> ${user.display_name}<br />
+            <b>Profile:</b> <a href="${user.url}">${user.url}</a><br />
+            <b>Cash:</b> $${user.cash_usd}<br />
+            <p><a href="${update_url}">Update</a></p>
+        </div>
+    </div>
+</div>
+<div id="footer">
+    <a href="/">MicroBank</a>
+</div>
+</body>
+</html>
