@@ -3,6 +3,8 @@
 .installed.cfg
 *.pyc
 *.egg-info
+*.sublime-project
+*.sublime-workspace
 bin
 lib
 eggs

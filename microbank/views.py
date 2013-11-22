@@ -52,10 +52,12 @@ def root_view(root, request):
     return {'users': list(root)}
 
 
-@view_config(name='configure', context=MicroBankRoot,
+@view_config(
+    name='configure', context=MicroBankRoot,
     renderer='templates/configure.pt')
 def configure_view(root, request):
-    form = Form(ConfigureSchema(),
+    form = Form(
+        ConfigureSchema(),
         buttons=(Button(name='submit', value='Save Changes'),))
     message = ''
     dbsession = DBSession()
@@ -107,7 +109,8 @@ def login(root, request):
     return HTTPFound(location=url)
 
 
-@view_config(name='login_callback', context=MicroBankRoot,
+@view_config(
+    name='login_callback', context=MicroBankRoot,
     renderer='templates/login_error.pt')
 def login_callback(root, request):
     """The user authenticated with WingCash.
@@ -126,7 +129,8 @@ def login_callback(root, request):
         return {'error': 'login_callback did not receive correct state value'}
 
     if 'error' in request.params:
-        return {'error': 'OAuth Error: %s (%s)' % (request.params['error'],
+        return {'error': 'OAuth Error: %s (%s)' % (
+            request.params['error'],
             request.params.get('error_description', 'no description'))}
 
     # We have an authorization code.  Use it to get an access token.
@@ -149,9 +153,9 @@ def login_callback(root, request):
             token_data = json.loads(token_response.content)
             if 'error' in token_data:
                 # See the OAuth 2 spec, section 5.2
-                return {
-                    'error': 'OAuth Error: %s (%s)' % (token_data['error'],
-                        token_data.get('error_description', 'no description')),
+                return {'error': 'OAuth Error: %s (%s)' % (
+                    token_data['error'],
+                    token_data.get('error_description', 'no description')),
                 }
         raise
 
@@ -166,22 +170,28 @@ def login_callback(root, request):
         return {
             'error': 'Received an unsupported token type: %s' % token_type,
         }
-    user = prepare_user(access_token, root)
+    user = prepare_user(request, access_token, root)
 
     # Redirect to the user object.
     url = resource_url(user, request)
     return HTTPFound(location=url)
 
 
-def prepare_user(access_token, parent):
+def prepare_user(request, access_token, parent):
     """Create or update a User object using the given access token."""
     instance_config = get_instance_config()
-    me_response = requests.post(instance_config['api_url'] + '/me', {
+    response = requests.post(instance_config['api_url'] + '/me', {
         'access_token': access_token,
     })
-    me_response.raise_for_status()
+    if response.status_code != 200:
+        if response.status_code == 401:
+            root = find_root(parent)
+            url = request.resource_url(root, 'login')
+            raise HTTPFound(location=url)
+        else:
+            response.raise_for_status()
 
-    me = json.loads(me_response.content)
+    me = json.loads(response.content)
     wingcash_id = me['id']
     dbsession = DBSession()
     user = dbsession.query(User).get(wingcash_id)
@@ -191,7 +201,7 @@ def prepare_user(access_token, parent):
     user.__parent__ = parent
     user.__name__ = unicode(wingcash_id)
     user.access_token = access_token
-    user.display_name = unicode(me['display_name'])
+    user.display_name = unicode(me['title'])
     user.url = me['url']
     user.photo50 = me['photo50']
     user.cash_usd = me['cash_usd']
@@ -208,6 +218,12 @@ def view_user(user, request):
 @view_config(name='update', context=User)
 def update_user(user, request):
     parent = user.__parent__
-    user2 = prepare_user(user.access_token, parent)
+    user2 = prepare_user(request, user.access_token, parent)
     url = resource_url(user2, request)
     return HTTPFound(location=url)
+
+
+def find_root(obj):
+    while obj.__parent__ is not None:
+        obj = obj.__parent__
+    return obj
