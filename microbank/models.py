@@ -24,7 +24,7 @@ class User(Base):
     access_token = Column(String(255), nullable=False)
     display_name = Column(Unicode(255), nullable=False)
     url = Column(String(255), nullable=False)
-    photo50 = Column(String(255), nullable=True)
+    image48 = Column(String(255), nullable=True)
     cash_usd = Column(String(20), nullable=True)
 
 

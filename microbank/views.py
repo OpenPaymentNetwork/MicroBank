@@ -1,4 +1,5 @@
 
+from decimal import Decimal
 from deform import Button
 from deform import Form
 from deform import ValidationFailure
@@ -104,6 +105,9 @@ def login(root, request):
         ('redirect_uri', redirect_uri),
         ('scope', request_scope),
         ('state', 'abc123'),
+        ('uuid', 'd4de07e3-d731-441b-81e2-5c2158205935'),
+        ('name', 'MicroBank Device'),
+#        ('force_login', 'true'),
     ])
     url = '%s?%s' % (instance_config['authorize_url'], q)
     return HTTPFound(location=url)
@@ -180,7 +184,7 @@ def login_callback(root, request):
 def prepare_user(request, access_token, parent):
     """Create or update a User object using the given access token."""
     instance_config = get_instance_config()
-    response = requests.post(instance_config['api_url'] + '/me', {
+    response = requests.post(instance_config['api_url'] + '/wallet/info', {
         'access_token': access_token,
     })
     if response.status_code != 200:
@@ -191,7 +195,8 @@ def prepare_user(request, access_token, parent):
         else:
             response.raise_for_status()
 
-    me = json.loads(response.content)
+    info = json.loads(response.content)
+    me = info['profile']
     wingcash_id = me['id']
     dbsession = DBSession()
     user = dbsession.query(User).get(wingcash_id)
@@ -203,8 +208,11 @@ def prepare_user(request, access_token, parent):
     user.access_token = access_token
     user.display_name = unicode(me['title'])
     user.url = me['url']
-    user.photo50 = me['photo50']
-    user.cash_usd = me['cash_usd']
+    user.image48 = me['image48']
+    user.cash_usd = str(sum(
+        Decimal(h['amount'])
+        for h in me['holdings']
+        if h['currency'] == 'USD' and h['loop_id'] == '0'))
     return user
 
 

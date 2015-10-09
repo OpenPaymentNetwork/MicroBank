@@ -10,7 +10,7 @@
 <div id="wrap">
     <div id="bottom">
         <div class="bottom">
-            <img src="${user.photo50}" style="float: left; margin: 0 10px 4px 0;" />
+            <img src="${user.image48}" style="float: left; margin: 0 10px 4px 0;" />
             <h1>MicroBank User ${user.display_name}</h1>
             <div style="clear: left;"></div>
             <b>Id:</b> ${user.wingcash_id}<br />

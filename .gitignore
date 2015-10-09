@@ -12,3 +12,6 @@ develop-eggs
 include
 microbank.db
 parts
+build
+local
+pip-selfcheck.json
